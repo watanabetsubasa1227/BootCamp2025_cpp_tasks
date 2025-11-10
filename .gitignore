@@ -1,0 +1,41 @@
+# -------------------------------
+# CLion / IntelliJ
+# -------------------------------
+.idea/
+.fleet/
+
+# -------------------------------
+# CMake
+# -------------------------------
+# デフォルトのビルドディレクトリ (cmake-build-debug, cmake-build-release など)
+# スラッシュ(/)を先頭につけて、プロジェクト直下のものだけを対象にする
+/cmake-build-*/
+
+# CMakeが生成する一時ファイルやキャッシュ
+CMakeFiles/
+CMakeCache.txt
+CMakeLists.txt.user
+cmake_install.cmake
+install_manifest.txt
+Makefile
+
+
+# -------------------------------
+# コンパイル成果物
+# -------------------------------
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+
+
+# -------------------------------
+# OS固有ファイル
+# -------------------------------
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
