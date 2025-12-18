@@ -18,6 +18,6 @@ add_executable(3_CsvOutput
 
 add_executable(4_LPF
         4_LPF/ApplyLowPassFilter.cpp
-        4_LPF/LowPassFilter.cpp
+        4_LPF/LowPassFilter.hpp
         4_LPF/LowPassFilter.h
 )

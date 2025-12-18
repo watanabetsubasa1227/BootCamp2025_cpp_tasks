@@ -1,23 +1,73 @@
-#include <stdio.h>
 #include <iostream>
 #include <fstream>
-#include <vector>
 #include <string>
-#include <conio.h>  // _kbhit()を使うため．Windows向け
+#include "crlserial2025.hpp"
 
-/*----------------------------------------------------------------------*/
-//Todo 課題3 "crlserial2025.hpp"というヘッダファイルをインクルードして使ってください．
+int main()
+{
+    crlSerial serial(TEXT("COM5"), 115200);
 
-/*----------------------------------------------------------------------*/
+    if (!serial.check()) {
+        std::cerr << "Error: serial port open failed." << std::endl;
+        return 1;
+    }
 
-#define PORT TEXT("COM8")   // ポートを設定 各自の環境によって変わります．適切なものを設定してください．
-#define BAUD 115200         // ボーレートを設定
-#define DATA_NUM 8          // データを読み込む個数（カンマ区切りの列数）を設定
+    std::ofstream ofs("joystick_log_mbedtime.csv");
+    if (!ofs) {
+        std::cerr << "Error: cannot open joystick_log_mbedtime.csv for write." << std::endl;
+        return 1;
+    }
 
-int main() {
-    /*----------------------------------------------------------------------*/
-    //Todo 課題3 ジョイスティックの入力をシリアルポートから受け取り，それをcsvに書き込んでください．
+    // time は mbed側のミリ秒と、秒の両方書いておくと便利
+    ofs << "time_ms,time_s,sw,x,y\n";
+
+    std::cout << "Start logging joystick data (mbed time in ms)..." << std::endl;
+
+    const int NUM_SAMPLES = 100;
+
+    for (int k = 0; k < NUM_SAMPLES; /* 中で進める */) {
+
+        std::string buf[4];
+
+        // mbed から「time_ms,sw,x,y」を受信
+        int n = serial.read_sci(4, buf);
+        if (n < 4) {
+            continue;
+        }
+
+        try {
+            // 文字列 → 数値に変換
+            int    t_ms = std::stoi(buf[0]);          // mbed側の経過時間 [ms]
+            int    sw   = std::stoi(buf[1]);
+            int    x    = std::stoi(buf[2]);
+            int    y    = std::stoi(buf[3]);
+            double t_s  = t_ms / 1000.0;              // 秒に直したもの
+
+            // （おまけ）PC側の時間も見たければこれも取れる
+            double t_pc = serial.GetTime();
+
+            // 画面表示
+            std::cout << "mbed_t=" << t_s << " [s]  "
+                      << "pc_t=" << t_pc << " [s]  "
+                      << "SW=" << sw
+                      << "  X=" << x
+                      << "  Y=" << y
+                      << std::endl;
+
+            // CSVに time_ms と time_s 両方入れておく
+            ofs << t_ms << "," << t_s << "," << sw << "," << x << "," << y << "\n";
+
+            ++k;
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Parse error: " << e.what()
+                      << " (tokens: \"" << buf[0] << "\", \"" << buf[1]
+                      << "\", \"" << buf[2] << "\", \"" << buf[3] << "\")\n";
+        }
+    }
+
+    ofs.close();
+    std::cout << "Logging finished. Saved to joystick_log_mbedtime.csv" << std::endl;
 
     return 0;
-    /*----------------------------------------------------------------------*/
 }
