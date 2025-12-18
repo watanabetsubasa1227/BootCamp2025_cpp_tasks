@@ -46,7 +46,6 @@ int main(int argc, char** argv) {
     }
 
     std::vector<double> t, x;
-
     std::string line;
     bool firstLine = true;
     while (std::getline(ifs, line)) {
